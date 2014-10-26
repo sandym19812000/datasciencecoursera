@@ -1,0 +1,14 @@
+Highlevel Flow of run_analysis.R script
+
+1. features.txt file is transposed to use as column names for x train and x test datasets
+2. X_train and x_test datasets have been subsetted to bring in only mean and std deviation columns
+3. x train, y train datasets have been merged with subject train datasets to merge
+subject id, activity id and activity description and all mean and standard deviation measures
+4. Similarly, x test, y test datasets have been merged with subject test datasets to merge
+subject id, activity id and activity description and all mean and standard deviation measures
+5. Step 3 and Step 4 are appended rowwise
+6. Average function is performed on all mean and standard deviation measures for each subject and activity
+7. The result set is exported into a text file
+
+Detailed comments are available in the scripts. All checks performed to ensure that source data is clean has been 
+documented in the comments of the script
