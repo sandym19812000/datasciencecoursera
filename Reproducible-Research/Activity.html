@@ -1,0 +1,36 @@
+Setting the home directory and reading the activity csv file
+
+'''{r}
+setwd(“/Users/Sandman/MOOC/Reproducible Research/”)
+rawdata <- read.csv(“activity.csv”,header=TRUE,sep=“,”)
+'''
+
+Cleaning up data and creating histogram, mean and median
+
+'''{r, echo=TRUE, results=asis}
+cleandata <- rawdata[!is.na(rawdata$steps),]
+sum_clean_data <- aggregate(cleandata$steps,by=list(date=cleandata$date),FUN=sum)
+names(sum_clean_data) = c(“Date”,“Steps”)
+hist(sum_clean_data$Steps)
+utils::str(hist(sum_clean_data$Steps, col = “gray”, labels = TRUE))
+mean_clean_data <- mean(sum_clean_data$Steps)
+median_clean_data <- median(sum_clean_data$Steps) mean_clean_data median_clean_data '''
+
+Calculating Daily Active Pattern
+
+'''{r, echo=TRUE,results=asis}
+avg_clean_data <- aggregate(cleandata$steps,by=list(date=cleandata$interval),FUN=mean)
+names(avg_clean_data) = c(“Interval”,“Average_Steps”)
+plot(avg_clean_data$Interval,avg_clean_data$Average_Steps,type=“l”)
+avg_clean_data[avg_clean_data$Average_Steps==max(avg_clean_data$Average_Steps),]
+
+Counting total no of records with NA
+
+'''{r, echo=TRUE,results=asis}
+Total_NAs <- nrow(rawdata[is.na(rawdata$steps),])
+Total_NAs
+'''
+
+Inputting missing values
+
+'''{r, echo=TRUE,results=asis} names(rawdata) <- c(“Steps”,“date”,“Interval”) head(rawdata) rawdata_mod <- merge(rawdata,avg_clean_data,all.x=TRUE) rawdata_mod_na <- rawdata_mod[is.na(rawdata_mod$Steps),] '''
