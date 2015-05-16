@@ -1,0 +1,103 @@
+library(knitr);
+
+# Setting the home directory and reading the activity csv file  
+
+```{r}  
+setwd("/Users/Sandman/MOOC/Reproducible Research/")  
+rawdata <- read.csv("activity.csv",header=TRUE,sep=",")  
+```
+
+# Cleaning up data and creating histogram, mean and median  
+```{r,echo=TRUE}  
+cleandata <- rawdata[!is.na(rawdata$steps),]  
+sum_clean_data <- aggregate(cleandata$steps,by=list(date=cleandata$date),FUN=sum)  
+names(sum_clean_data) = c("Date","Steps")  
+hist(sum_clean_data$Steps)  
+utils::str(hist(sum_clean_data$Steps, col = "gray", labels = TRUE))  
+mean_clean_data <- mean(sum_clean_data$Steps)  
+median_clean_data <- median(sum_clean_data$Steps)
+mean_clean_data
+median_clean_data
+```
+
+# Calculating Daily Active Pattern  
+```{r,echo=TRUE}  
+avg_clean_data <- aggregate(cleandata$steps,by=list(date=cleandata$interval),FUN=mean)  
+names(avg_clean_data) = c("Interval","Average_Steps")  
+plot(avg_clean_data$Interval,avg_clean_data$Average_Steps,type="l")  
+avg_clean_data[avg_clean_data$Average_Steps==max(avg_clean_data$Average_Steps),]   
+```
+
+
+
+# Inputting missing values
+    
+## Counting total no of records with NA  
+```{r,echo=TRUE}  
+Total_NAs <- nrow(rawdata[is.na(rawdata$steps),])  
+Total_NAs  
+```  
+
+## Filling in missing values with mean values
+ 
+```{r,echo=TRUE}
+names(rawdata) <- c("Steps","date","Interval")
+head(rawdata)
+rawdata_mod <- merge(rawdata,avg_clean_data,all.x=TRUE)
+rawdata_mod_na <- rawdata_mod[is.na(rawdata_mod$Steps),]
+names(rawdata) <- c("Steps","date","Interval")
+rawdata_mod <- merge(rawdata,avg_clean_data,all.x=TRUE)
+rawdata_mod_na <- rawdata_mod[is.na(rawdata_mod$Steps),c("Interval","date","Average_Steps")]
+names(rawdata_mod_na) <- c("Interval","date","Steps")
+rawdata_mod_clean <- rawdata_mod[!is.na(rawdata_mod$Steps),c("Interval","date","Steps")]
+```
+
+## Dataset with filled in values are stored in a data frame
+```{r,echo=TRUE}
+rawdata_mod_final <- rbind(rawdata_mod_clean,rawdata_mod_na)
+names(rawdata_mod_final) <- c("Interval","date","steps")
+```
+
+
+## Show median and mean values with filled in data
+```{r,echo=TRUE}
+sum_mod_data <- aggregate(rawdata_mod_final$steps,by=list(date=rawdata_mod_final$date),FUN=sum)
+names(sum_mod_data) = c("Date","Steps")
+
+hist(sum_mod_data$Steps)
+utils::str(hist(sum_mod_data$Steps, col = "gray", labels = TRUE))
+
+mean_mod_data <- mean(sum_mod_data$Steps)
+median_mod_data <- median(sum_mod_data$Steps)
+```
+
+
+
+# Are there differences in activity patterns between weekdays and weekends?
+## Creating factor variable with 2 values - Weekdays and Weekends
+
+```{r,echo=TRUE}
+filleddata <- cbind(rawdata_mod_final,dayofweek = ifelse(weekdays(as.Date(rawdata_mod_final$date),abbreviate=FALSE) %in% c("Saturday","Sunday"),"Weekend","Weekday"))
+
+filleddata_wd <- filleddata[filleddata$dayofweek=="Weekend",]
+filleddata_we <- filleddata[filleddata$dayofweek=="Weekday",]
+
+weekday_filled_data <- aggregate(filleddata_wd$steps,by=list(Interval=filleddata_wd$Interval),FUN=mean)
+plot(weekday_filled_data$Interval,weekday_filled_data$x,type="l")
+
+weekend_filled_data <- aggregate(filleddata_we$steps,by=list(Interval=filleddata_we$Interval),FUN=mean)
+plot(weekend_filled_data$Interval,weekend_filled_data$x,type="l")
+```
+
+## Create a panel plot with average number of steps taken across weekend days and weekdays
+```{r,echo=TRUE}
+library(ggplot2);
+library(grid);
+library(gridExtra);
+a <- ggplot() +
+  geom_line(data=weekday_filled_data, aes(x = Interval,y = x),colour = "Red")
+b<- ggplot() +
+  geom_line(data=weekend_filled_data, aes(x = Interval,y = x),colour = "Green")
+
+grid.arrange(a,b,ncol=1)
+```
