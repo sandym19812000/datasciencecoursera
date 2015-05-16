@@ -1,7 +1,5 @@
-library(knitr)
-library(ggplot2)
-library(grid)
-library(gridExtra)
+library(knitr);
+
 # Setting the home directory and reading the activity csv file  
 
 ```{r}  
@@ -93,12 +91,13 @@ plot(weekend_filled_data$Interval,weekend_filled_data$x,type="l")
 
 ## Create a panel plot with average number of steps taken across weekend days and weekdays
 ```{r,echo=TRUE}
+library(ggplot2);
+library(grid);
+library(gridExtra);
 a <- ggplot() +
   geom_line(data=weekday_filled_data, aes(x = Interval,y = x),colour = "Red")
 b<- ggplot() +
   geom_line(data=weekend_filled_data, aes(x = Interval,y = x),colour = "Green")
 
 grid.arrange(a,b,ncol=1)
-ggplot(data=filleddata,aes(x= Interval,y= steps))+geom_line() + facet_grid(dayofweek ~ .)
 ```
-
